@@ -35,6 +35,9 @@ class Node:
     
     def __eq__(self, node):
         return self.i == node.i and self.j == node.j
+
+    def __str__(self) -> str:
+        return str((self.i, self.j, self.type))
     
 
 def navigate(source, des, graph):
@@ -43,12 +46,12 @@ def navigate(source, des, graph):
 
     open_list.append(source)
 
-    min_distance = 5
-    delta_distance = 5
+    min_distance = 0
+    delta_distance = 1
 
     while len(open_list) > 0:
         
-        max_distance = 20
+        max_distance = 2
 
         # current Node
         current_node = open_list[0]
@@ -57,6 +60,7 @@ def navigate(source, des, graph):
             if item.f < current_node.f:
                 current_node = item
                 current_index = index
+        print(current_node,current_index)
         
         # Pop current off open list, add to closed list
         open_list.pop(current_index)

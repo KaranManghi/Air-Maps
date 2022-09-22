@@ -1,6 +1,4 @@
 import sys
-
-
 sys.path.append('C:\Air-Maps\navigation\AStar.py')
 from AStar import Node
 from AStar import Graph
@@ -24,7 +22,7 @@ node14 = Node(3,2,'airport', None)
 node15 = Node(3,3,'airport', None)
 node16 = Node(3,4,'city', None)
 node17 = Node(3,5,'airport', None)
-nodes = node1, node2, node3, node4, node5, node6, node7, node8, node9, node10, node11, node12, node13, node14, node15
+nodes = node1, node2, node3, node4, node5, node6, node7, node8, node9, node10, node11, node12, node13, node14, node15, node16, node17
 graph = Graph(nodes)
 
 
