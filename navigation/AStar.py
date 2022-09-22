@@ -5,7 +5,7 @@ class Graph:
     def __init__(self, nodes):
         self.nodes = nodes
     
-    @cache
+    
     def getNeighbors(self, node, min_distance, max_distance):
         neighbors = []
         for n in self.nodes:
@@ -14,7 +14,7 @@ class Graph:
                 if distance > min_distance and distance < max_distance:
                     neighbors.append(n)
             
-        return n
+        return neighbors
 
 class Node:
     def __init__(self, lat, long, type, parent = None):
@@ -102,3 +102,8 @@ def navigate(source, des, graph):
                     child.f = child.g + child.h
                     child.parent = current_node
  
+
+
+
+
+
