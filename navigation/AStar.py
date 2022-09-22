@@ -1,5 +1,5 @@
 from functools import cache
-from haversine import haversine, Unit
+from math import dist
 
 class Graph:
     def __init__(self, nodes):
@@ -10,16 +10,16 @@ class Graph:
         neighbors = []
         for n in self.nodes:
             if node != n:
-                distance = n.getNauticalMiles(node)
+                distance = n.getEuclidianDistance(node)
                 if distance > min_distance and distance < max_distance:
                     neighbors.append(n)
             
         return neighbors
 
 class Node:
-    def __init__(self, lat, long, type, parent = None):
-        self.lat = lat
-        self.long = long
+    def __init__(self, i, j, type, parent = None):
+        self.i = i
+        self.j = j
         self.type = type
 
         self.parent = parent
@@ -28,13 +28,13 @@ class Node:
         self.h = 0
         self.f = 0
 
-    def getNauticalMiles(self, node):
-        source = (self.lat, self.long)
-        dest = (node.lat, node.long)
-        return haversine(source, dest, unit=Unit.NAUTICAL_MILES)
+    def getEuclidianDistance(self, node):
+        source = (self.i, self.j)
+        dest = (node.i, node.j)
+        return dist(source, dest)
     
     def __eq__(self, node):
-        return self.lat == node.lat and self.long == node.long
+        return self.i == node.i and self.j == node.j
     
 
 def navigate(source, des, graph):
@@ -67,7 +67,7 @@ def navigate(source, des, graph):
             path = []
             current = current_node
             while current is not None:
-                path.append((current.lat, current.long))
+                path.append((current.i, current.j))
                 current = current.parent
             return path[::-1] # Return reversed path
         
@@ -89,16 +89,16 @@ def navigate(source, des, graph):
             
             #if child is not on the open list
             if child not in open_list:
-                child.g = current_node.g + current_node.getNauticalMiles(child)
-                child.h = child.getNauticalMiles(des)
+                child.g = current_node.g + current_node.getEuclidianDistance(child)
+                child.h = child.getEuclidianDistance(des)
                 child.f = child.g + child.h
                 child.parent = current_node
                 open_list.append(child)
             else:
             # Child is already in the open list
-                if child.g > current_node.g + current_node.getNauticalMiles(child):
-                    child.g = current_node.g + current_node.getNauticalMiles(child)
-                    child.h = child.getNauticalMiles(des)
+                if child.g > current_node.g + current_node.getEuclidianDistance(child):
+                    child.g = current_node.g + current_node.getEuclidianDistance(child)
+                    child.h = child.getEuclidianDistance(des)
                     child.f = child.g + child.h
                     child.parent = current_node
  
