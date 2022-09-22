@@ -44,11 +44,12 @@ def navigate(source, des, graph):
     open_list.append(source)
 
     min_distance = 5
-    max_distance = 20
     delta_distance = 5
 
     while len(open_list) > 0:
         
+        max_distance = 20
+
         # current Node
         current_node = open_list[0]
         current_index = 0
@@ -83,22 +84,21 @@ def navigate(source, des, graph):
         for child in children:
 
             # Child is on the closed list
-            for closed_child in closed_list:
-                if child == closed_child:
-                    continue
+            if child in closed_list:
+                continue
             
-            # Create the f, g, and h values
-            child.g = current_node.g + current_node.getNauticalMiles(child)
-            child.h = child.getNauticalMiles(des)
-            child.f = child.g + child.h
-
+            #if child is not on the open list
+            if child not in open_list:
+                child.g = current_node.g + current_node.getNauticalMiles(child)
+                child.h = child.getNauticalMiles(des)
+                child.f = child.g + child.h
+                child.parent = current_node
+                open_list.append(child)
+            else:
             # Child is already in the open list
-            for open_node in open_list:
-                if child == open_node and child.g > open_node.g:
-                    continue
-
-            # Add the child to the open list
-            open_list.append(child)
-            child.parent = current_node
-
+                if child.g > current_node.g + current_node.getNauticalMiles(child):
+                    child.g = current_node.g + current_node.getNauticalMiles(child)
+                    child.h = child.getNauticalMiles(des)
+                    child.f = child.g + child.h
+                    child.parent = current_node
  
