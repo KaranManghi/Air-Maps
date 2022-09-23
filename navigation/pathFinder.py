@@ -59,12 +59,12 @@ def main():
     burley = Node(2670,2900)
 
     print("Enter the source of the route!")
-    #source = Input()
-    source = auburn
+    source = Input()
+    # source = auburn
 
     print("Enter the destination of the route!")
-    #dest = Input()
-    dest = portAngeles
+    dest = Input()
+    # dest = portAngeles
 
     path = findPath(source, dest, graph)
 
