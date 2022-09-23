@@ -11,13 +11,13 @@ class Graph:
         for n in self.nodes:
             if node != n:
                 distance = n.getEuclidianDistance(node)
-                if distance > min_distance and distance < max_distance and node.type != 'NoFlyingZone':
+                if distance > min_distance and distance < max_distance and n.type != 'Restricted':
                     neighbors.append(n)
             
         return neighbors
 
 class Node:
-    def __init__(self, i, j, type, parent = None):
+    def __init__(self, i, j, type = None, parent = None):
         self.i = i
         self.j = j
         self.type = type
@@ -39,40 +39,44 @@ class Node:
     def __str__(self) -> str:
         return str((self.i, self.j, self.type))
     
+    def __hash__(self) -> int:
+        return hash(self.i) + hash(self.j)
 
 def navigate(source, des, graph):
-    open_list = []
-    closed_list = []
+    open_set = set()
+    closed_set = set()
 
-    open_list.append(source)
+    open_set.add(source)
 
-    min_distance = 0
-    delta_distance = 1
+    #50, 150, 600
+    min_distance = 150
+    delta_distance = 50
 
-    while len(open_list) > 0:
+    while len(open_set) > 0:
         
-        max_distance = 2
+        max_distance = 600
 
         # current Node
-        current_node = open_list[0]
-        current_index = 0
-        for index, item in enumerate(open_list):
+        current_node = open_set.pop()
+        open_set.add(current_node)
+
+        for item in open_set:
             if item.f < current_node.f:
                 current_node = item
-                current_index = index
         
         # Pop current off open list, add to closed list
-        open_list.pop(current_index)
-        closed_list.append(current_node)
+        open_set.remove(current_node)
+        closed_set.add(current_node)
 
         # Found the goal
         if current_node == des:
             path = []
             current = current_node
             while current is not None:
-                path.append((current.i, current.j))
+                path.append(current)
                 current = current.parent
-            return getUpdatedPath(path[::-1], des, graph) # Return reversed path
+            #return getUpdatedPath(path[::-1], des, graph) # Check for Restricted Zone Path
+            return path[::-1]
         
         children = []
 
@@ -86,16 +90,16 @@ def navigate(source, des, graph):
         for child in children:
 
             # Child is on the closed list
-            if child in closed_list:
+            if child in closed_set:
                 continue
             
             #if child is not on the open list
-            if child not in open_list:
+            if child not in open_set:
                 child.g = current_node.g + current_node.getEuclidianDistance(child)
                 child.h = child.getEuclidianDistance(des)
                 child.f = child.g + child.h
                 child.parent = current_node
-                open_list.append(child)
+                open_set.add(child)
             else:
             # Child is already in the open list
                 if child.g > current_node.g + current_node.getEuclidianDistance(child):
@@ -108,9 +112,9 @@ def navigate(source, des, graph):
 def getUpdatedPath(path, des, graph):
     no_flying_zone = set()
 
-    for node in graph:
-        if node.type == 'NoFlyingZone':
-            no_flying_zone.append(node)
+    for node in graph.nodes:
+        if node.type == 'Restricted':
+            no_flying_zone.add(node)
         
     index = 0
 
@@ -118,15 +122,15 @@ def getUpdatedPath(path, des, graph):
         cur_node = path[index]
         next_node = path[index + 1]
 
-        if isCrossingNoFlyingZone(cur_node, next_node, no_flying_zone):
+        if isCrossingRestrictedZone(cur_node, next_node, no_flying_zone):
+            print('Inside Restricted Zone!!')
             virtual_node = getVirtualNode(cur_node, next_node, des, no_flying_zone)
             path.insert(index + 1, virtual_node)
         else:
             index += 1    
     return path
 
-
-def isCrossingNoFlyingZone(cur_node, next_node, no_flying_zone):
+def isCrossingRestrictedZone(cur_node, next_node, no_flying_zone):
 
     path_nodes = getPathNodes(cur_node, next_node)
     for n in path_nodes:
@@ -172,7 +176,7 @@ def getPathNodes(cur_node, next_node):
 
 
 def getVirtualNode(cur_node, next_node, des, no_flying_zone):
-    delta = 20
+    delta = 60
     mid = Node((cur_node.i + next_node.i) // 2, (cur_node.j + next_node.j) // 2)
 
     best_node = None
