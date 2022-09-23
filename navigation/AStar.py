@@ -11,7 +11,7 @@ class Graph:
         for n in self.nodes:
             if node != n:
                 distance = n.getEuclidianDistance(node)
-                if distance > min_distance and distance < max_distance:
+                if distance > min_distance and distance < max_distance and node.type != 'NoFlyingZone':
                     neighbors.append(n)
             
         return neighbors
@@ -60,7 +60,6 @@ def navigate(source, des, graph):
             if item.f < current_node.f:
                 current_node = item
                 current_index = index
-        print(current_node,current_index)
         
         # Pop current off open list, add to closed list
         open_list.pop(current_index)
@@ -73,9 +72,8 @@ def navigate(source, des, graph):
             while current is not None:
                 path.append((current.i, current.j))
                 current = current.parent
-            return path[::-1] # Return reversed path
+            return getUpdatedPath(path[::-1], des, graph) # Return reversed path
         
-
         children = []
 
         while len(children) == 0:
@@ -107,7 +105,100 @@ def navigate(source, des, graph):
                     child.parent = current_node
  
 
+def getUpdatedPath(path, des, graph):
+    no_flying_zone = set()
+
+    for node in graph:
+        if node.type == 'NoFlyingZone':
+            no_flying_zone.append(node)
+        
+    index = 0
+
+    while index < len(path) - 1:
+        cur_node = path[index]
+        next_node = path[index + 1]
+
+        if isCrossingNoFlyingZone(cur_node, next_node, no_flying_zone):
+            virtual_node = getVirtualNode(cur_node, next_node, des, no_flying_zone)
+            path.insert(index + 1, virtual_node)
+        else:
+            index += 1    
+    return path
 
 
+def isCrossingNoFlyingZone(cur_node, next_node, no_flying_zone):
+
+    path_nodes = getPathNodes(cur_node, next_node)
+    for n in path_nodes:
+        if n in no_flying_zone:
+            return True   
+    return False
+
+def getPathNodes(cur_node, next_node):
+    points = []
+    x1, y1 = cur_node.i, cur_node.j
+    x2, y2 = next_node.i, next_node.j
+    issteep = abs(y2-y1) > abs(x2-x1)
+    if issteep:
+        x1, y1 = y1, x1
+        x2, y2 = y2, x2
+    rev = False
+    if x1 > x2:
+        x1, x2 = x2, x1
+        y1, y2 = y2, y1
+        rev = True
+    deltax = x2 - x1
+    deltay = abs(y2-y1)
+    error = int(deltax / 2)
+    y = y1
+    ystep = None
+    if y1 < y2:
+        ystep = 1
+    else:
+        ystep = -1
+    for x in range(x1, x2 + 1):
+        if issteep:
+            points.append(Node(y, x))
+        else:
+            points.append(Node(x, y))
+        error -= deltay
+        if error < 0:
+            y += ystep
+            error += deltax
+    # Reverse the list if the coordinates were reversed
+    if rev:
+        points.reverse()
+    return points
 
 
+def getVirtualNode(cur_node, next_node, des, no_flying_zone):
+    delta = 20
+    mid = Node((cur_node.i + next_node.i) // 2, (cur_node.j + next_node.j) // 2)
+
+    best_node = None
+
+    while best_node is None:
+
+        best_distance = float('Infinity')
+
+        left = Node(mid.i - delta, mid.j, 'Virtual', cur_node)
+        right = Node(mid.i + delta, mid.j, 'Virtual', cur_node)
+        top = Node(mid.i, mid.j + delta, 'Virtual', cur_node )
+        bottom = Node(mid.i, mid.j - delta, 'Virtual', cur_node)
+
+        if left.getEuclidianDistance(des) < best_distance and left not in no_flying_zone:
+            best_node = left
+
+        if right.getEuclidianDistance(des) < best_distance and right not in no_flying_zone:
+            best_node = right
+
+        if top.getEuclidianDistance(des) < best_distance and top not in no_flying_zone:
+            best_node = top
+        
+        if bottom.getEuclidianDistance(des) < best_distance and bottom not in no_flying_zone:
+            best_node = bottom
+        
+        delta += 10
+
+        if best_node is not None:
+            return best_node
