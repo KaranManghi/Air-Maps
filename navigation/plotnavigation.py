@@ -14,7 +14,7 @@ for coord in coordinates:
 
 print(os.listdir())
 mapplot = plt.plot(xcoordinates,ycoordinates)
-map = plt.imread('navigation/map.jpg')
+map = plt.imread('map.jpg')
 plt.imshow(map)
 plt.show()
 
